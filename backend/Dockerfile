@@ -1,47 +1,41 @@
-# Stage 1: Build frontend
-FROM node:18-alpine AS frontend-builder
+# Stage 1: Build
+FROM node:18-alpine AS builder
 
-WORKDIR /app/frontend
-
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ ./
-RUN npm run build
-
-# Stage 2: Install backend dependencies
-FROM node:18-alpine AS backend-builder
-
+# Set working directory
 WORKDIR /app
 
-COPY package*.json ./
+# Install dependencies
+COPY package.json package-lock.json ./
 RUN npm ci --only=production
 
-# Copy backend source code
+# Copy source code
 COPY . .
 
-# Stage 3: Production image
+# Stage 2: Production
 FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Create non-root user
+# Create a non-root user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Copy backend code and deps
-COPY --from=backend-builder /app ./
+# Copy dependencies from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app ./
 
-# Copy built frontend files
-COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
-
-# Set env
+# Set environment variables
 ENV NODE_ENV=production
 
-# Expose the port your backend runs on
+# Expose port
 EXPOSE 5001
 
-# Run as non-root
+# Switch to non-root user
 USER appuser
 
 # Start the server
 CMD ["npm", "start"]
+
+# Health check
+#HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+#  CMD curl -f http://localhost:5001/health || exit 1

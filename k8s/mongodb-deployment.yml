@@ -23,7 +23,7 @@ spec:
               value: secret
           ports:
             - containerPort: 27017
-          volumes:
-            - name: mongodb-data
-              persistentVolumeClaim:
-                claimName: mongodb-pvc
+      volumes:
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-pvc

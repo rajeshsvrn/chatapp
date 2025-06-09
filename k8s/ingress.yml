@@ -10,19 +10,19 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-    http:
-      paths:
-        - pathType: Prefix
-          path: "/"
-          backend:
-            service:
-              name: frontend
-              port:
-                number: 80
-        - pathType: Prefix
-          path: "/api"
-          backend:
-            service:
-              name: backend
-              port:
-                number: 5001
+    - http: # ← This dash (-) is crucial - makes it an array item
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: "/api"
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 5001
